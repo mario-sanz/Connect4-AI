@@ -21,7 +21,7 @@ AI_PIECE = 2
 WINDOW_LENGTH = 4
 
 def create_board():
-    board = np.zeros((ROW_COUNT,COLUMN_COUNT)) # creo una matriz 6x7 rellena de ceros
+    board = np.zeros((ROW_COUNT,COLUMN_COUNT)) # create a 6x7 matrix full of 0's
     return board;
 
 
@@ -30,39 +30,39 @@ def drop_piece(board, row, col, piece):
 
 
 def is_valid_location(board, col):
-    return board[ROW_COUNT-1][col] == 0 # está la columna vacía?
+    return board[ROW_COUNT-1][col] == 0 # is the column empty?
 
 
 def get_next_open_row(board, col):
     for r in range(ROW_COUNT):
         if board[r][col] == 0:
-            return r # la funcion nos devuelve la primera fila que esté vacía
+            return r # the function returns the first row that is empty
 
 
 def print_board(board):
-    print(np.flip(board, 0)) # revierte el board desde el eje 0
+    print(np.flip(board, 0)) # flips the board from axix 0
 
 
 def winning_move(board, piece):
-    # Comprobar posibilidades HORIZONTALES
+    # Check HORIZONTAL possibilities
 	for c in range(COLUMN_COUNT-3):
 		for r in range(ROW_COUNT):
 			if board[r][c] == piece and board[r][c+1] == piece and board[r][c+2] == piece and board[r][c+3] == piece:
 				return True
 
-    # Comprobar posibilidades VERTICALES
+    # Check VERTICAL possibilities
 	for c in range(COLUMN_COUNT):
 		for r in range(ROW_COUNT-3):
 			if board[r][c] == piece and board[r+1][c] == piece and board[r+2][c] == piece and board[r+3][c] == piece:
 				return True
 
-    # Comprobar posibilidades DIAGONALES CON PENDIENTE POSITIVA
+    # Check DIAGONALS WITH POSITIVE SLOPE possibilities
 	for c in range(COLUMN_COUNT-3):
 		for r in range(ROW_COUNT-3):
 			if board[r][c] == piece and board[r+1][c+1] == piece and board[r+2][c+2] == piece and board[r+3][c+3] == piece:
 				return True
 
-	# Comprobar posibilidades DIAGONALES CON PENDIENTE NEGATIVA
+	# Check DIAGONALS WITH NEGATIVE SLOPE possibilities
 	for c in range(COLUMN_COUNT-3):
 		for r in range(3, ROW_COUNT):
 			if board[r][c] == piece and board[r-1][c+1] == piece and board[r-2][c+2] == piece and board[r-3][c+3] == piece:
@@ -83,39 +83,39 @@ def evaluate_window(window, piece):
         score += 2
 
     if window.count(opp_piece) == 3 and window.count(EMPTY) == 1:
-        score -= 4 # cuenta más que nosotros tengamos 3 en raya que que el rival tenga 3 en raya
+        score -= 4 # it counts more that we have 3 in a row to win that that the opponent has 3 in a row
     
     return score
     
 
 def score_position(board, piece):
     score = 0
-    # PUNTUACIÓN DEL CENTRO
+    # CENTER SCORE
     center_array = [int(i) for i in list(board[:, COLUMN_COUNT//2])]
     center_count = center_array.count(piece)
     score += center_count * 3
 
-    # PUNTUACIÓN HORIZONTAL
+    # HORIZONTAL SCORE
     for r in range(ROW_COUNT):
-        row_array = [int(i) for i in list(board[r,:])] # esto guarda una fila en un solo array
+        row_array = [int(i) for i in list(board[r,:])] # store row t into an array
         for c in range(COLUMN_COUNT-3):
             window = row_array[c:c+WINDOW_LENGTH]
             score += evaluate_window(window, piece)
 
-    # PUNTUACIÓN VERTICAL
+    # VERTICAL SCORE
     for c in range(COLUMN_COUNT):
-        col_array = [int(i) for i in list(board[:,c])] # la columna c es guardada en un array
+        col_array = [int(i) for i in list(board[:,c])] # store column c into an array
         for r in range(ROW_COUNT-3):
             window = col_array[r:r+WINDOW_LENGTH]
             score += evaluate_window(window, piece)
 
-    # PUNTUACIÓN DIAGONAL CON PENDIENTE POSITIVA
+    # DIAGONALS WITH POSITIVE SLOPE SCORE
     for r in range(ROW_COUNT-3):
         for c in range(COLUMN_COUNT-3):
             window = [board[r+i][c+i] for i in range(WINDOW_LENGTH)]
             score += evaluate_window(window, piece)
 
-    # PUNTUACIÓN DIAGONAL CON PENDIENTE NEGATIVA
+    # DIAGONALS WITH NEGATIVE SLOPE SCORE
     for r in range(ROW_COUNT-3):
         for c in range(COLUMN_COUNT-3):
             window = [board[r+3-i][c+i] for i in range(WINDOW_LENGTH)]
@@ -126,11 +126,11 @@ def score_position(board, piece):
 
 def is_terminal_node(board):
     return winning_move(board, PLAYER_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
-    # devuelve True si gana el jugador, si gana la AI, o si np quedan posiciones en el tablero
-
+    # returns True if the player wins, if the AI wins, or if there are no more positions in the board
 
 """
-ESTA ES LA VERSION ORIGINAL DE MINIMAX, DEBAJO DE ESTA FUNCIÓN ESTÁ "ALPHA-BETA PRUNING", QUE ES UNA VERSION MAS COMPLEJA DE MINIMAX QUE ELIMINA LAS RAMAS QUE NO DEBEN SER TOMADAS DESDE UN PRINCIPIO PARA QUE EL ALGORITMO FUNCIONE MAS RAPIDO
+THIS IS THE ORIGINAL MINIMAX VERSION, BELLOW THIS FUNCITION IS "ALPHA-BETA PRUNING", THAT IS AN IMPROVED VERSION
+OF MINIMAX WHICH ELIMINATES BRANCHES THAT ARE NOT WORKING SO THAT THE ALGORITHM IS MORE EFFICIENT
 
 def minimax(board, depth, maximizingPlayer):
     valid_locations = get_valid_locations(board)
@@ -141,7 +141,7 @@ def minimax(board, depth, maximizingPlayer):
                 return (None, 100000000)
             elif winning_move(board, PLAYER_PIECE):
                 return (None, -100000000)
-            else: # game over, no hay mas movimientos validos
+            else: # game over, no more valid movements
                 return (None, 0)
         else: # depth = 0
             return (None, score_position(board, AI_PIECE))
@@ -164,7 +164,7 @@ def minimax(board, depth, maximizingPlayer):
             row = get_next_open_row(board, col)
             b_copy = board.copy()
             drop_piece(b_copy, row, col, PLAYER_PIECE)
-            new_score = minimax(b_copy, depth-1, True)[1] # cambia al maximizing player
+            new_score = minimax(b_copy, depth-1, True)[1] # change to maximizing player
             if new_score < value:
                 value = new_score
                 column = col
@@ -179,7 +179,7 @@ def minimax(board, depth, alpha, beta, maximizingPlayer): # ALPHA-BETA PRUNING
                 return (None, 100000000000000)
             elif winning_move(board, PLAYER_PIECE):
                 return (None, -10000000000000)
-            else: # game over, no hay mas movimientos validos
+            else: # game over, no more valid movements
                 return (None, 0)
         else: # depth = 0
             return (None, score_position(board, AI_PIECE))
@@ -205,7 +205,7 @@ def minimax(board, depth, alpha, beta, maximizingPlayer): # ALPHA-BETA PRUNING
             row = get_next_open_row(board, col)
             b_copy = board.copy()
             drop_piece(b_copy, row, col, PLAYER_PIECE)
-            new_score = minimax(b_copy, depth-1, alpha, beta, True)[1] # cambia al maximizing player
+            new_score = minimax(b_copy, depth-1, alpha, beta, True)[1] # changes to maximizing player
             if new_score < value:
                 value = new_score
                 column = col
@@ -240,7 +240,7 @@ def pick_best_move(board, piece):
 
 
 def draw_board(board):
-    # dibujo del tablero y agujeros vacios
+    # draw of the board and empty spaces
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
             pygame.draw.rect(screen, BLUE, (c*SQUARESIZE, r*SQUARESIZE+SQUARESIZE, SQUARESIZE, SQUARESIZE))
@@ -249,9 +249,9 @@ def draw_board(board):
 
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            if board[r][c] == PLAYER_PIECE: # dibujar fichas 1
+            if board[r][c] == PLAYER_PIECE: # draw tiles 1 (red)
                 pygame.draw.circle(screen, RED, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
-            elif board[r][c] == AI_PIECE: # dibujar fichas 2
+            elif board[r][c] == AI_PIECE: # draw tiles 2 (yellow)
                 pygame.draw.circle(screen, YELLOW, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
 
     pygame.display.update()
@@ -279,7 +279,7 @@ pygame.display.update()
 
 myfont = pygame.font.SysFont("monospace", 75)
 
-turn = random.randint(PLAYER, AI) # hace que empiece el jugador o la IA aleatoriamente
+turn = random.randint(PLAYER, AI) # player or IA start at random
 
 while not game_over:
 
@@ -287,42 +287,42 @@ while not game_over:
         if event.type == pygame.QUIT:
             sys.exit()
 
-        # dibuja la ficha arriba moviendose antes de caer
+        # draw the tile moving in the upper part of the board before falling
         if event.type == pygame.MOUSEMOTION:
-            pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE)) # borra la anterior ficha moviendose
+            pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE)) # constantly erase the previous moving tile
             posx = event.pos[0]
-            if turn == PLAYER: # jugador 1
+            if turn == PLAYER: # player 1
                 pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
         pygame.display.update()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE)) # borra la anterior ficha moviendose
-            #print(event.pos) # esto nos imprime en consola las coordenadas de donde pinchamos
+            pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE)) # erase the previous moving tile
+            #print(event.pos) # this tells us on the console the coordinates of the window on which we press
 
-            # Input del PRIMER jugador
+            # Input of FIRST player
             if turn == PLAYER:
-                posx = event.pos[0] # pos[0] indica el eje x de las coordenadas
-                col = int(math.floor(posx/SQUARESIZE)) # esto nos da el numero de la columna que pulsamos
+                posx = event.pos[0] # pos[0] is the x axis of the coordinates
+                col = int(math.floor(posx/SQUARESIZE)) # this gives us the column number on which we press
                 
                 if is_valid_location(board, col):
                     row = get_next_open_row(board,col)
-                    drop_piece(board, row, col, PLAYER_PIECE) # las fichas del jugador 1 siempre son 1
+                    drop_piece(board, row, col, PLAYER_PIECE) # tiles of player 1 are always 1
 
                     if winning_move(board, PLAYER_PIECE):
                         label = myfont.render("JUGADOR 1 GANA", 1, RED)
                         screen.blit(label, (40,10))
                         game_over = True
 
-                    # ALTERNANCIA DE TURNOS
+                    # TURN ALTERNANCE
                     turn += 1
-                    turn = turn % 2 # el turno va a alternar entre 0 y 1
+                    turn = turn % 2 # turn is going to altern between 0 and 1
 
-                    # TABLERO
+                    # BOARD
                     print_board(board)
                     draw_board(board)
 
 
-    # Input del SEGUNDO jugador
+    # Input of SECOND player
     if turn == AI and not game_over:
 
         # col = random.randint(0, COLUMN_COUNT-1)
@@ -332,21 +332,20 @@ while not game_over:
         if is_valid_location(board, col):
             #pygame.time.wait(500)
             row = get_next_open_row(board,col)
-            drop_piece(board, row, col, AI_PIECE) # las fichas del jugador 2 siempre son 2
+            drop_piece(board, row, col, AI_PIECE) # tiles of player 2 are always 2
 
             if winning_move(board, AI_PIECE):
                 label = myfont.render("ORDENADOR GANA", 1, YELLOW)
                 screen.blit(label, (40,10))
                 game_over = True
 
-            # TABLERO
+            # BOARD
             print_board(board)
             draw_board(board)
 
-            # ALTERNANCIA DE TURNOS
+            # TURN ALTERNANCE
             turn += 1
-            turn = turn % 2 # el turno va a alternar entre 0 y 1
+            turn = turn % 2 # turn is going to altern between 0 and 1
 
     if game_over:
-        pygame.time.wait(3000) # espera 3 segundos antes de cerrarse la ventana
-
+        pygame.time.wait(3000) # wait 3 seconds before closing the window
