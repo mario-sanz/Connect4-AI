@@ -12,7 +12,9 @@ I have developed it with comments so that everyone with a basic knowledge of Pyt
 No previous knowkedge of efficient algorithms is required to understand it.
 
 Stars in GitHub are appreciated!
+
 If you have any further questions or suggestions, don't hesitate to ask me here: [Questions and issues][issues-page]
+
 Developer: [mario-sanz][mariosanz]
 
 <!-- References -->
